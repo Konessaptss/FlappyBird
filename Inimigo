@@ -1,0 +1,75 @@
+using UnityEngine;
+using System.Collections;
+
+public class GeradorInimigos : MonoBehaviour
+{
+    public GameObject inimigoPrefab;
+    public float intervalo = 30f;
+    public float limiteX = 8f;
+    public float limiteY = 4f;
+    public float velocidade = 3f;
+    public float limiteDestruicaoX = -12f;
+
+    private GameObject inimigoAtual;
+
+    void Start()
+    {
+        InvokeRepeating("TentarGerarInimigo", 0f, intervalo);
+    }
+
+    void TentarGerarInimigo()
+    {
+        // Só gera novo inimigo se o anterior foi destruído
+        if (inimigoAtual == null)
+        {
+            GerarInimigo();
+        }
+    }
+
+    void GerarInimigo()
+    {
+        float x = limiteX;
+        float y = Random.Range(-limiteY, limiteY);
+        Vector2 posicaoAleatoria = new Vector2(x, y);
+
+        inimigoAtual = Instantiate(inimigoPrefab, posicaoAleatoria, Quaternion.identity);
+        StartCoroutine(MoverInimigo(inimigoAtual));
+    }
+
+    IEnumerator MoverInimigo(GameObject inimigo)
+    {
+        while (inimigo != null)
+        {
+            inimigo.transform.Translate(Vector2.left * velocidade * Time.deltaTime);
+
+            if (inimigo.transform.position.x < limiteDestruicaoX)
+            {
+                Destroy(inimigo);
+                yield break;
+            }
+
+            yield return null;
+        }
+    }
+
+   void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            PararJogo();
+        }
+    }
+
+    void PararJogo()
+    {
+        // Para o tempo do jogo
+        Time.timeScale = 0f;
+
+        // Opcional: Mostrar tela de game over
+        Debug.Log("Game Over! Jogador atingido pelo inimigo.");
+    }
+
+
+
+
+}
